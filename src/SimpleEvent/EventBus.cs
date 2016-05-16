@@ -12,9 +12,9 @@ namespace SimpleEvent
     {
         private static ThreadLocal<IList> _subscribers = new ThreadLocal<IList>(() => new List<object>());
         private static ThreadLocal<object> _safeLock = new ThreadLocal<object>(() => new object());
-        private object _lockObj = _safeLock.Value;
+        private object _lockObj { get { return _safeLock.Value; } }
 
-        public static EventBus NewInstance { get { return new EventBus(); } }
+        public static EventBus Instance { get { return Singleton.GetInstance(); } }
 
         public void Publish<TEvent>(TEvent e) where TEvent : IEvent
         {
@@ -52,6 +52,15 @@ namespace SimpleEvent
             lock (_lockObj)
             {
                 _subscribers.Value.Clear();
+            }
+        }
+
+        class Singleton
+        {
+            private static EventBus _eventBus = new EventBus();
+            public static EventBus GetInstance()
+            {
+                return _eventBus;
             }
         }
     }
