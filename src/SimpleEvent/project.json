@@ -1,7 +1,7 @@
 ﻿{
   "version": "1.0.0-*",
-  "description": "EventBus Class Library",
-  "authors": [ "Kenshin" ],
+  "description": "Simple EventBus Class Library",
+  "authors": [ "JoeTse" ],
   "tags": [ "" ],
   "projectUrl": "",
   "licenseUrl": "",
