@@ -33,7 +33,8 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="SimpleEvent">
+    <Reference Include="SimpleEvent, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\artifacts\bin\SimpleEvent\Debug\net451\SimpleEvent.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -50,7 +51,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SampleClass.cs" />
     <Compile Include="SampleClass2.cs" />
-    <Compile Include="SubscribeEvent.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

@@ -8,25 +8,24 @@ namespace SimpleEvent
 {
     public class EventBus
     {
-        private static readonly ThreadLocal<IList> Subscribers = new ThreadLocal<IList>(() => new List<object>());
-        private static readonly ThreadLocal<object> SafeLock = new ThreadLocal<object>(() => new object());
-        private static object LockObj => SafeLock.Value;
+        private static readonly ThreadLocal<IList<object>> Subscribers = new ThreadLocal<IList<object>>(() => new List<object>());
+        private static readonly IList<object> _globalSubscribers = new List<object>();
 
-        private static IList _globalSubscribers = new List<object>();
+        private static readonly ThreadLocal<object> LocalLock = new ThreadLocal<object>(() => new object());
+        private static readonly object GlobalLock = new object();
+        private static object LockObj => LocalLock.Value;
 
         public static EventBus Instance => Singleton.GetInstance();
 
         private EventBus()
         {
-            //todo add globle subscribers to local
-
         }
 
         public void Publish<TEvent>(TEvent e) where TEvent : IEvent
         {
             lock (LockObj)
             {
-                foreach (ISubscriber<TEvent> subscriber in Subscribers.Value)
+                foreach (ISubscriber<TEvent> subscriber in GetSubscribers())
                 {
                     if (subscriber.EventType == typeof(TEvent))
                     {
@@ -36,7 +35,11 @@ namespace SimpleEvent
             }
         }
 
-        public void Subscribe<TEvent>(ISubscriber<TEvent> subscriber) where TEvent : IEvent
+        /// <summary>
+        /// Subscribe to local thread
+        /// </summary>
+        /// <param name="subscriber"></param>
+        public void SubscribeLocal<TEvent>(ISubscriber<TEvent> subscriber) where TEvent : IEvent
         {
             lock (LockObj)
             {
@@ -44,12 +47,37 @@ namespace SimpleEvent
             }
         }
 
-        public void Subscribe<TEvent>(Action<TEvent> action) where TEvent : IEvent
+        /// <summary>
+        /// Subscribe to local thread
+        /// </summary>
+        /// <param name="action"></param>
+        public void SubscribeLocal<TEvent>(Action<TEvent> action) where TEvent : IEvent
         {
             lock (LockObj)
             {
                 var defaultSbuscriber = new DefaultSubscriber<TEvent>(action);
                 Subscribers.Value.Add(defaultSbuscriber);
+            }
+        }
+
+        /// <summary>
+        /// You should use it only when your app started.
+        /// </summary>
+        /// <param name="subscriber"></param>
+        public void SubscribeGlobal<TEvent>(ISubscriber<TEvent> subscriber) where TEvent : IEvent
+        {
+            lock (GlobalLock)
+            {
+                _globalSubscribers.Add(subscriber);
+            }
+        }
+
+        public void SubscribeGlobal<TEvent>(Action<TEvent> action) where TEvent : IEvent
+        {
+            lock (LockObj)
+            {
+                var defaultSbuscriber = new DefaultSubscriber<TEvent>(action);
+                _globalSubscribers.Add(defaultSbuscriber);
             }
         }
 
@@ -59,6 +87,14 @@ namespace SimpleEvent
             {
                 Subscribers.Value.Clear();
             }
+        }
+
+        private IList<object> GetSubscribers()
+        {
+            var s = new List<object>();
+            s.AddRange(_globalSubscribers);
+            s.AddRange(Subscribers.Value);
+            return s;
         }
 
         class Singleton
