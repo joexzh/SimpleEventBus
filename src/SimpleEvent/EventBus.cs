@@ -6,7 +6,7 @@ using System.Linq;
 
 namespace SimpleEvent
 {
-    public class EventBus
+    public class EventBus : IDisposable
     {
         private static readonly ThreadLocal<IList<object>> Subscribers = new ThreadLocal<IList<object>>(() => new List<object>());
         private static readonly IList<object> _globalSubscribers = new List<object>();
@@ -95,6 +95,11 @@ namespace SimpleEvent
             s.AddRange(_globalSubscribers);
             s.AddRange(Subscribers.Value);
             return s;
+        }
+
+        public void Dispose()
+        {
+            Reset();
         }
 
         class Singleton
